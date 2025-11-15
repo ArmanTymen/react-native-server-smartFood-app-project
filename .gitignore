@@ -1,0 +1,20 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Temporary
+tmp/
+*.tmp
+.DS_Store
+
+# Postgres
+*.sql
+/src/generated/prisma

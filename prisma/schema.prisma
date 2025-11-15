@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personalRation personalRation?
+  favorites Favorites[]   // избранное
+}
+
+model personalRation {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id])
+
+  weight        Float?
+  height        Float?
+  age           Int?
+  gender        Gender? @default(male)
+  activityLevel ActivityLevel? @default(medium)
+  goal          Goal? @default(maintain)
+  dietType      DietType @default(none)
+  allergies     Allergies @default(no)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Allergies {
+  yes
+  no
+}
+        
+enum Gender {
+  male
+  female
+}
+
+enum ActivityLevel {
+  low
+  medium
+  high
+}
+
+enum Goal {
+  lose
+  maintain
+  gain
+}
+
+enum DietType {
+  none
+  vegan
+  keto
+  balanced
+  custom
+}
+
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  articles Article[]
+}
+
+model Article {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  favorites Favorites[] 
+}
+
+model Favorites {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  articleId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  article Article @relation(fields: [articleId], references: [id])
+}
