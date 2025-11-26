@@ -1,30 +1,45 @@
 import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
+import { Schema } from 'joi';
 
-export const validate = (schema: z.ZodSchema<any>) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await schema.parseAsync({
+export interface ValidatedRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Request {
+  body: TBody;
+  validatedQuery?: TQuery;
+  validatedParams?: TParams;
+}
+
+export const validate = <TBody, TQuery = {}, TParams = {}>(schema: Schema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { error, value } = schema.validate(
+      {
         body: req.body,
         query: req.query,
         params: req.params,
-      });
-      next();
-    } catch (error: any) {
-      if (error && error.issues) {
-        const errors = error.issues.map((issue: any) => ({
-          field: issue.path?.join('.') || 'unknown',
-          message: issue.message || 'Validation error',
-        }));
-
-        return res.status(400).json({
-          success: false,
-          message: 'Ошибка валидации',
-          errors,
-        });
+      },
+      {
+        abortEarly: false,
+        allowUnknown: true,
+        stripUnknown: true,
       }
-      
-      next(error);
+    );
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ошибка валидации',
+        errors: error.details.map((err) => ({
+          field: err.path.join('.') || 'unknown',
+          message: err.message,
+        })),
+      });
     }
+
+    // безопасно переписываем только body
+    (req as ValidatedRequest<TBody, TQuery, TParams>).body = value.body;
+
+    // для query и params создаём новые поля
+    (req as ValidatedRequest<TBody, TQuery, TParams>).validatedQuery = value.query;
+    (req as ValidatedRequest<TBody, TQuery, TParams>).validatedParams = value.params;
+
+    next();
   };
 };

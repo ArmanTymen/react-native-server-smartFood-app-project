@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import prisma from '../../db'
+import prisma from '../db'
 
 export const getAllArticles = async (req: Request, res: Response) => {
   try {

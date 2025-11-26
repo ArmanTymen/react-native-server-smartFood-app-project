@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
+const articleRoutes_1 = __importDefault(require("./routes/articleRoutes"));
+const favoritesRoutes_1 = __importDefault(require("./routes/favoritesRoutes"));
+const personalRationRoutes_1 = __importDefault(require("./routes/personalRationRoutes"));
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
+app.use('/api/users', authRoutes_1.default);
+app.use('/api/categories', categoryRoutes_1.default);
+app.use('/api/articles', articleRoutes_1.default);
+app.use('/api/favorites', favoritesRoutes_1.default);
+app.use('/api/personalRation', personalRationRoutes_1.default);
+exports.default = app;

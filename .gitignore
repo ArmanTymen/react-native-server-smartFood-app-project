@@ -17,4 +17,4 @@ tmp/
 
 # Postgres
 *.sql
-/src/generated/prisma
+/prisma/generated/prisma

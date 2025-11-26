@@ -1,12 +1,13 @@
 {
   "name": "smartmealserver",
   "version": "1.0.0",
-  "main": "index.ts",
-  "private": true,
+  "main": "dist/server.js",
+   "type": "commonjs",
   "scripts": {
-    "dev": "npx ts-node server.ts",
+    "dev": "ts-node src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "postinstall": "npm run build"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -21,6 +22,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.19.0",
     "zod": "^4.1.12"
@@ -30,6 +32,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
+    "joi-extract-type": "^15.0.8",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

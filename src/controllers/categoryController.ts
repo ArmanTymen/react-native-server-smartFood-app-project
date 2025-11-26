@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import prisma from '../../db'
-import { Prisma } from '../generated/prisma/client'
+import prisma from '../db'
+import { Prisma } from '../../prisma/generated/prisma/client'
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
