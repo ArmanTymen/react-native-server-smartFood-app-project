@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("../prisma/generated/prisma/client");
-const prisma = new client_1.PrismaClient();
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    errorFormat: 'pretty',
+});
+process.on('beforeExit', async () => {
+    await prisma.$disconnect();
+});
+process.on('SIGINT', async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+});
 exports.default = prisma;
-//  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2MjY2OTUxMn0.wqm_Re5vddUMkRd6hjYFpLvCFRcuBHwIv3miCBZhLCk"

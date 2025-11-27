@@ -9,24 +9,25 @@ const validate = (schema) => {
             params: req.params,
         }, {
             abortEarly: false,
-            allowUnknown: true,
+            allowUnknown: false,
             stripUnknown: true,
         });
         if (error) {
+            console.warn('Validation error:', error.details);
             return res.status(400).json({
                 success: false,
                 message: 'Ошибка валидации',
                 errors: error.details.map((err) => ({
-                    field: err.path.join('.') || 'unknown',
+                    field: err.path.join('.'),
                     message: err.message,
+                    type: err.type,
                 })),
             });
         }
-        // безопасно переписываем только body
-        req.body = value.body;
-        // для query и params создаём новые поля
-        req.validatedQuery = value.query;
-        req.validatedParams = value.params;
+        req.validatedData = value;
+        req.body = value.body || {};
+        req.query = value.query || {};
+        req.params = value.params || {};
         next();
     };
 };

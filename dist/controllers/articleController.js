@@ -31,7 +31,6 @@ const getAllArticles = async (req, res) => {
     }
 };
 exports.getAllArticles = getAllArticles;
-// Получить статью по ID
 const getArticleById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -66,7 +65,6 @@ const getArticleById = async (req, res) => {
     }
 };
 exports.getArticleById = getArticleById;
-// Создать новую статью
 const createArticle = async (req, res) => {
     try {
         const { title, content, categoryId } = req.body;

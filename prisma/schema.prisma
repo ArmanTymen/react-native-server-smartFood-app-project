@@ -1,12 +1,8 @@
 // This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -21,58 +17,57 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  personalRation personalRation?
-  favorites Favorites[]   // избранное
+  personalRation PersonalRation?  // ← исправить регистр
+  favorites      Favorites[]
 }
 
-model personalRation {
+model PersonalRation {  // ← исправить регистр (PascalCase)
   id            Int      @id @default(autoincrement())
   userId        Int      @unique
-  user          User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   weight        Float?
   height        Float?
   age           Int?
-  gender        Gender? @default(male)
-  activityLevel ActivityLevel? @default(medium)
-  goal          Goal? @default(maintain)
-  dietType      DietType @default(none)
-  allergies     Allergies @default(no)
+  gender        Gender? @default(MALE)
+  activityLevel ActivityLevel? @default(MEDIUM)
+  goal          Goal? @default(MAINTAIN)
+  dietType      DietType @default(NONE)
+  allergies     Allergies @default(NO)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum Allergies {
-  yes
-  no
+  NO
+  YES  // ← UPPERCASE для enum значений
 }
-        
+
 enum Gender {
-  male
-  female
+  MALE
+  FEMALE
 }
 
 enum ActivityLevel {
-  low
-  medium
-  high
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum Goal {
-  lose
-  maintain
-  gain
+  LOSE
+  MAINTAIN
+  GAIN
 }
 
 enum DietType {
-  none
-  vegan
-  keto
-  balanced
-  custom
+  NONE
+  VEGAN
+  KETO
+  BALANCED
+  CUSTOM
 }
-
 
 model Category {
   id       Int       @id @default(autoincrement())
@@ -85,9 +80,9 @@ model Article {
   title      String
   content    String
   categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  favorites Favorites[] 
+  favorites Favorites[]
 }
 
 model Favorites {
@@ -96,6 +91,8 @@ model Favorites {
   articleId Int
   createdAt DateTime @default(now())
 
-  user    User    @relation(fields: [userId], references: [id])
-  article Article @relation(fields: [articleId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])  // ← предотвратить дубликаты
 }

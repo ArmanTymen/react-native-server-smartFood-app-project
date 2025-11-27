@@ -5,10 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    console.error('JWT_SECRET is not defined! Exiting...');
-    process.exit(1);
-}
 const authenticate = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -26,14 +22,29 @@ const authenticate = (req, res, next) => {
     }
     const token = parts[1];
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET, {
+            algorithms: ['HS256']
+        });
         req.user = decoded;
         next();
     }
     catch (error) {
-        res.status(403).json({
+        console.error('JWT verification error:', error.message);
+        if (error.name === 'TokenExpiredError') {
+            return res.status(403).json({
+                success: false,
+                message: 'Токен просрочен'
+            });
+        }
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(403).json({
+                success: false,
+                message: 'Невалидный токен'
+            });
+        }
+        res.status(500).json({
             success: false,
-            message: 'Невалидный или просроченный токен'
+            message: 'Ошибка аутентификации'
         });
     }
 };

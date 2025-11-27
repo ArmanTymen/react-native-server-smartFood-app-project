@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import prisma from '../db'
-import { Prisma } from '../../prisma/generated/prisma/client'
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
@@ -33,14 +32,31 @@ export const getCategoryById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     
+    // ПРОВЕРЯЕМ ЧТО ID ЕСТЬ И НЕ ПУСТОЙ
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID категории обязателен'
+      })
+    }
+
+    // ПРЕОБРАЗУЕМ В ЧИСЛО
+    const categoryId = parseInt(id)
+    if (isNaN(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID должен быть числом'
+      })
+    }
+
     const category = await prisma.category.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: categoryId },
       include: {
         articles: {
           select: {
             id: true,
             title: true,
-            content: true,
+            content: true
           }
         }
       }
@@ -70,6 +86,12 @@ export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name } = req.body
 
+    if (!name?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Название категории обязательно'
+      })
+    }
     const category = await prisma.category.create({
       data: { name }
     })

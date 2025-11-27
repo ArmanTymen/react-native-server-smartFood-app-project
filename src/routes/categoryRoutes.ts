@@ -8,9 +8,9 @@ import {
 
 const router = express.Router()
 
-router.get('/articles', getArticles) // <- сначала фиксированный путь
-router.get('/:id', getCategoryById) // <- потом параметр
-router.get('/', getAllCategories)
-router.post('/', createCategory)
+router.get('/', getAllCategories)        // /categories
+router.post('/', createCategory)         // /categories
+router.get('/articles/search', getArticles) 
+router.get('/:id', getCategoryById)      // /categories/:id
 
 export default router

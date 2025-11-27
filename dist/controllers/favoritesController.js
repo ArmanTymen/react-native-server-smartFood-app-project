@@ -38,16 +38,58 @@ exports.getAllFavorites = getAllFavorites;
 const deleteFavorite = async (req, res) => {
     try {
         const { id } = req.params;
-        const favorite = await db_1.default.favorites.delete({
-            where: { id: Number(id) }
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Пользователь не авторизован'
+            });
+        }
+        const favoriteId = Number(id);
+        if (isNaN(favoriteId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID должен быть числом'
+            });
+        }
+        const favorite = await db_1.default.favorites.findUnique({
+            where: { id: favoriteId },
+            include: {
+                article: {
+                    select: {
+                        id: true,
+                        title: true
+                    }
+                }
+            }
         });
-        res.json({ success: true, message: 'Deleted from favorites', data: favorite });
+        if (!favorite) {
+            return res.status(404).json({
+                success: false,
+                message: 'Запись не найдена'
+            });
+        }
+        if (favorite.userId !== req.user.userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Нет прав для удаления этой записи'
+            });
+        }
+        await db_1.default.favorites.delete({
+            where: { id: favoriteId }
+        });
+        res.json({
+            success: true,
+            message: 'Удалено из избранного',
+            data: {
+                deletedFavorite: favorite
+            }
+        });
     }
     catch (error) {
         console.error('Delete favorites error:', error);
         res.status(500).json({
             success: false,
-            message: 'Ошибка при удаленний из избранного'
+            message: 'Ошибка при удалении из избранного'
         });
     }
 };

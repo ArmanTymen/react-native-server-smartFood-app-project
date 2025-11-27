@@ -11,8 +11,9 @@ const TOKEN_EXPIRATION = '7d';
 export const register = async (req: Request<{}, {}, RegisterInput['body']>, res: Response) => {
   try {
     const { email, password } = req.body;
+    const trimmedEmail = email.trim().toLowerCase();
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({ where: { email: trimmedEmail } });
     if (existingUser) {
       return res.status(409).json({ success: false, message: 'Пользователь с таким email уже существует' });
     }
@@ -23,7 +24,10 @@ export const register = async (req: Request<{}, {}, RegisterInput['body']>, res:
       select: { id: true, email: true, createdAt: true, updatedAt: true }
     });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { 
+      expiresIn: TOKEN_EXPIRATION,
+      algorithm: 'HS256' 
+    });
 
     res.status(201).json({
       success: true,
@@ -39,25 +43,52 @@ export const register = async (req: Request<{}, {}, RegisterInput['body']>, res:
 export const login = async (req: Request<{}, {}, LoginInput['body']>, res: Response) => {
   try {
     const { email, password } = req.body;
+    const trimmedEmail = email.trim();
+
+    console.log('🔐 LOGIN ATTEMPT:', { email, trimmedEmail, password });
+
     const user = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, email: true, password: true, createdAt: true, updatedAt: true },
+      where: { email: trimmedEmail },
+      select: { id: true, email: true, password: true, createdAt: true, updatedAt: true }, // ← ДОБАВЬ createdAt, updatedAt
     });
 
+    console.log('👤 FOUND USER:', user);
+
     if (!user) {
+      console.log('❌ USER NOT FOUND IN DB');
       return res.status(401).json({ success: false, message: 'Неверный email или пароль' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('✅ Password valid:', isPasswordValid);
+
     if (!isPasswordValid) {
       return res.status(401).json({ success: false, message: 'Неверный email или пароль' });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
+    console.log('✅ LOGIN SUCCESSFUL');
 
-    res.json({ success: true, message: 'Вход выполнен успешно', data: { user: { id: user.id, email: user.email }, token } });
+    // 🔥 ДОБАВЬ ЭТОТ КОД - ГЕНЕРАЦИЯ ТОКЕНА И ОТВЕТ
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { 
+      expiresIn: TOKEN_EXPIRATION,
+      algorithm: 'HS256' 
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    console.log('📤 SENDING RESPONSE WITH USER:', userWithoutPassword);
+    
+    res.json({ 
+      success: true, 
+      message: 'Вход выполнен успешно', 
+      data: { 
+        user: userWithoutPassword, // ← содержит id, email, createdAt, updatedAt
+        token 
+      } 
+    });
+    
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('💥 LOGIN ERROR:', error);
     res.status(500).json({ success: false, message: 'Внутренняя ошибка сервера' });
   }
 };

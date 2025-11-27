@@ -10,10 +10,6 @@ export interface AuthRequest extends Request {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
-if (!JWT_SECRET) {
-  console.error('JWT_SECRET is not defined! Exiting...');
-  process.exit(1);
-}
 
 const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization
@@ -36,13 +32,33 @@ const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = parts[1]
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number }
+    const decoded = jwt.verify(token, JWT_SECRET, { 
+      algorithms: ['HS256']
+    }) as { userId: number }
+    
     req.user = decoded
     next()
-  } catch (error) {
-    res.status(403).json({ 
+  } catch (error: any) {
+    console.error('JWT verification error:', error.message)
+    
+    // Более детальные ошибки
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Токен просрочен' 
+      })
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Невалидный токен' 
+      })
+    }
+    
+    res.status(500).json({ 
       success: false,
-      message: 'Невалидный или просроченный токен' 
+      message: 'Ошибка аутентификации' 
     })
   }
 }

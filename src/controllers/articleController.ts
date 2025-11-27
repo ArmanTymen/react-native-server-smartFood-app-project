@@ -32,8 +32,17 @@ export const getArticleById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     
+    // ПРЕОБРАЗУЕМ ID И ПРОВЕРЯЕМ
+    const articleId = parseInt(id)
+    if (isNaN(articleId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID должен быть числом'
+      })
+    }
+
     const article = await prisma.article.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: articleId },
       include: {
         category: {
           select: {
@@ -69,11 +78,28 @@ export const createArticle = async (req: Request, res: Response) => {
   try {
     const { title, content, categoryId } = req.body
 
+    // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ
+    if (!title?.trim() || !content?.trim() || !categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Все поля обязательны: title, content, categoryId'
+      })
+    }
+
+    // ПРЕОБРАЗУЕМ И ПРОВЕРЯЕМ categoryId
+    const categoryIdNum = parseInt(categoryId)
+    if (isNaN(categoryIdNum)) {
+      return res.status(400).json({
+        success: false,
+        message: 'categoryId должен быть числом'
+      })
+    }
+
     const article = await prisma.article.create({
       data: {
-        title,
-        content,
-        categoryId: parseInt(categoryId)
+        title: title.trim(),
+        content: content.trim(),
+        categoryId: categoryIdNum
       }
     })
 

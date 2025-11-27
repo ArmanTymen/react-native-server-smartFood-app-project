@@ -1,20 +1,43 @@
 # Node
 node_modules/
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
 
 # Environment variables
 .env
+.env.*.local
+.env.local
 
 # Logs
 logs/
 *.log
+loglevel
+
+# Prisma
+/prisma/generated/
+/prisma/migrations/dev/
+/prisma/*.db
+/prisma/*.db-journal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+._*
 
 # Temporary
 tmp/
 *.tmp
-.DS_Store
+*.temp
 
-# Postgres
-*.sql
-/prisma/generated/prisma
+# Coverage
+.coverage/
+.nyc_output/

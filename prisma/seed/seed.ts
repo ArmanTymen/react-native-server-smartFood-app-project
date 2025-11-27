@@ -1,30 +1,42 @@
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
+// @ts-ignore
 import seedData from './seedData.json';
 
 const prisma = new PrismaClient();
-interface SeedArticle {
-  title: string;
-  content?: string;
-}
 
-interface SeedCategory {
-  name: string;
-  articles: SeedArticle[];
-}
 async function main() {
   console.log('🌱 Start seeding...');
 
-  await prisma.article.deleteMany();
-  await prisma.category.deleteMany();
+  // Очистка в правильном порядке
+  try {
+    await prisma.favorites.deleteMany();
+  } catch (e) { console.log('Favorites table not exists yet') }
+  
+  try {
+    await prisma.personalRation.deleteMany();
+  } catch (e) { console.log('PersonalRation table not exists yet') }
+  
+  try {
+    await prisma.article.deleteMany();
+  } catch (e) { console.log('Articles table not exists yet') }
+  
+  try {
+    await prisma.category.deleteMany();
+  } catch (e) { console.log('Categories table not exists yet') }
+  
+  try {
+    await prisma.user.deleteMany();
+  } catch (e) { console.log('Users table not exists yet') }
 
-  for (const category of seedData as SeedCategory[]) {
+  // Только категории и статьи
+  for (const category of seedData) {
     const createdCategory = await prisma.category.create({
       data: {
         name: category.name,
         articles: {
-          create: category.articles.map(article => ({
+          create: category.articles.map((article: any) => ({
             title: article.title,
-            content: article.content || ""
+            content: article.content || "Содержание статьи..."
           }))
         }
       }

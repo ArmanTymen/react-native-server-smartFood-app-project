@@ -21,7 +21,10 @@ const register = async (req, res) => {
             data: { email, password: hashedPassword },
             select: { id: true, email: true, createdAt: true, updatedAt: true }
         });
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: TOKEN_EXPIRATION,
+            algorithm: 'HS256'
+        });
         res.status(201).json({
             success: true,
             message: 'Пользователь успешно создан',
@@ -48,7 +51,10 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: 'Неверный email или пароль' });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION });
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: TOKEN_EXPIRATION,
+            algorithm: 'HS256'
+        });
         res.json({ success: true, message: 'Вход выполнен успешно', data: { user: { id: user.id, email: user.email }, token } });
     }
     catch (error) {
